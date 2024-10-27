@@ -63,7 +63,7 @@ export function NewTransactionDialog({
       </DialogTrigger>
 
       <DialogContent className="bg-white">
-        <View>
+        <View className='space-y-2'>
           <Text className="text-lg font-semibold leading-none tracking-tight">Criar transação</Text>
 
           <Text className="text-sm text-muted-foreground">
@@ -71,7 +71,7 @@ export function NewTransactionDialog({
           </Text>
         </View>
 
-        <View className="space-y-4 py-2 pb-4">
+        <View className="space-y-5 py-4">
           <Input
             label="Título"
             id="title"
@@ -86,12 +86,17 @@ export function NewTransactionDialog({
             onChangeText={value => setValue(Number(value))}
           />
 
-          <Picker 
-            onValueChange={(value) => setType(value as TransactionType)}
-          >
-            <Picker.Item label="Entrada" value="income" />
-            <Picker.Item label="Saída" value="outcome" />
-          </Picker>
+          <View>
+            <Text className="text-base">Tipo</Text>
+
+            <Picker 
+              className='m-0'
+              onValueChange={(value) => setType(value as TransactionType)}
+            >
+              <Picker.Item label="Entrada" value="income" />
+              <Picker.Item label="Saída" value="outcome" />
+            </Picker>
+          </View>
 
           <Input
             label="Categoria"

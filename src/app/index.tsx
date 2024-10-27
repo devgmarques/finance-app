@@ -1,14 +1,51 @@
+import { useEffect, useState } from "react"
 import { Text, View } from "react-native"
 import FeatherIcons from '@expo/vector-icons/Feather'
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card } from "@/components/Card"
 import { NewTransactionDialog } from "@/components/NewTransactionDialog"
 
 import { formatPrice } from "@/lib/utils"
+import { Transaction } from "@/types/transaction"
 
 export default function Index() {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+
+  useEffect(() => {
+    async function fetchTransactionInMemory() {
+      const transactions = await AsyncStorage.getItem('@finance.app:transactions')
+
+      if (!transactions) return
+
+      setTransactions(JSON.parse(transactions))
+    }
+
+    fetchTransactionInMemory()
+  }, [])
+
+  const incomeValue = transactions.reduce((acc, transaction) => {
+    return transaction.type === 'income' ? acc + transaction.value : acc
+  }, 0)
+
+  const outcomeValue = transactions.reduce((acc, transaction) => {
+    return transaction.type === 'outcome' ? acc + transaction.value : acc
+  }, 0)
+
+  const balance = incomeValue - outcomeValue
+
+  function handleTransactionCreation (transaction: Transaction) {
+    const transactionsToSave = [transaction, ...transactions]
+
+    AsyncStorage.setItem(
+      '@finance.app:transactions', 
+      JSON.stringify(transactionsToSave)
+    )
+    setTransactions(transactionsToSave)
+  }
+
   return (
     <>
       <SafeAreaView className="bg-[#5429cc]">
@@ -16,7 +53,7 @@ export default function Index() {
           <Text className='block text-xl font-bold text-white'>finance.app</Text>
 
           <NewTransactionDialog
-            onCreateTransaction={(input) => console.log(input)}
+            onCreateTransaction={(input) => handleTransactionCreation(input)}
           />
         </View>
       </SafeAreaView>
@@ -26,21 +63,21 @@ export default function Index() {
           <Card
             title='Entradas' 
             icon={<FeatherIcons name="arrow-up-circle" className='h-5 w-5 text-green-500' />}
-            value={formatPrice(10)}
+            value={formatPrice(incomeValue)}
             variant='basic'
           />
 
           <Card
             title='Saídas' 
             icon={<FeatherIcons name="arrow-down-circle" className='h-5 w-5 text-red-500' />}
-            value={formatPrice(10)}
+            value={formatPrice(outcomeValue)}
             variant='basic'
           />
 
           <Card
             title='Saldo' 
             icon={<FeatherIcons name="dollar-sign" className='h-5 w-5 text-white' />}
-            value={formatPrice(10)}
+            value={formatPrice(balance)}
             variant='highlighted'
           />
         </View>

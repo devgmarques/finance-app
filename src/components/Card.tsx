@@ -15,7 +15,7 @@ type CardProps = {
 
 const styles = {
   card: {
-    basic: 'bg-white border-none shadow-sm',
+    basic: 'bg-white border-gray-400',
     highlighted: 'bg-green-400 border-green-400 shadow-sm',
   },
   title: {
@@ -35,6 +35,7 @@ export function Card({ title, icon, value, variant }: CardProps) {
         <CardTitle className={styles.title[variant]}>
           {title}
         </CardTitle>
+        
         {icon}
       </CardHeader>
 
