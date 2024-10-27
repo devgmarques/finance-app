@@ -5,7 +5,7 @@ import { Alert, Text, View } from 'react-native'
 
 import { Picker } from '@react-native-picker/picker'
 
-import { Transaction, TransactionType } from "@/types/transaction"
+import { Transaction, TransactionType } from "@/types/Transaction"
 
 import { Input } from "./ui/Input"
 import { Button } from "./ui/Button"
@@ -90,8 +90,8 @@ export function NewTransactionDialog({
             <Text className="text-base">Tipo</Text>
 
             <Picker 
-              className='m-0'
               onValueChange={(value) => setType(value as TransactionType)}
+              selectedValue={type}
             >
               <Picker.Item label="Entrada" value="income" />
               <Picker.Item label="Saída" value="outcome" />

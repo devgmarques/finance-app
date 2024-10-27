@@ -9,9 +9,12 @@ import { Card } from "@/components/Card"
 import { NewTransactionDialog } from "@/components/NewTransactionDialog"
 
 import { formatPrice } from "@/lib/utils"
-import { Transaction } from "@/types/transaction"
+import { Transaction } from "@/types/Transaction"
+import { useToast } from "@/components/ui/Toast";
 
 export default function Index() {
+  const { toast } = useToast()
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
 
   useEffect(() => {
@@ -44,6 +47,8 @@ export default function Index() {
       JSON.stringify(transactionsToSave)
     )
     setTransactions(transactionsToSave)
+
+    toast("Transação criada com sucesso", "success", 4000)
   }
 
   return (
