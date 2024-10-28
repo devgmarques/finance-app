@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react"
-import { Text, View } from "react-native"
-import FeatherIcons from '@expo/vector-icons/Feather'
+import { FlatList, Settings, Text, TouchableOpacity, View } from "react-native"
+import FeatherIcons from "@expo/vector-icons/Feather"
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context'
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { DataTable } from "react-native-paper"
 
 import { Card } from "@/components/Card"
 import { NewTransactionDialog } from "@/components/NewTransactionDialog"
 
-import { formatPrice } from "@/lib/utils"
-import { Transaction } from "@/types/Transaction"
-import { useToast } from "@/components/ui/Toast";
+import { formatDate, formatPrice } from "@/lib/utils"
+import { CreateTransaction, Transaction } from "@/types/Transaction"
+import { useToast } from "@/components/ui/Toast"
 
 export default function Index() {
   const { toast } = useToast()
@@ -19,7 +20,7 @@ export default function Index() {
 
   useEffect(() => {
     async function fetchTransactionInMemory() {
-      const transactions = await AsyncStorage.getItem('@finance.app:transactions')
+      const transactions = await AsyncStorage.getItem("@finance.app:transactions")
 
       if (!transactions) return
 
@@ -30,20 +31,24 @@ export default function Index() {
   }, [])
 
   const incomeValue = transactions.reduce((acc, transaction) => {
-    return transaction.type === 'income' ? acc + transaction.value : acc
+    return transaction.type === "income" ? acc + transaction.value : acc
   }, 0)
 
   const outcomeValue = transactions.reduce((acc, transaction) => {
-    return transaction.type === 'outcome' ? acc + transaction.value : acc
+    return transaction.type === "outcome" ? acc + transaction.value : acc
   }, 0)
 
   const balance = incomeValue - outcomeValue
 
-  function handleTransactionCreation (transaction: Transaction) {
+  function handleTransactionCreation (input: CreateTransaction) {
+    const transaction: Transaction = {
+      transactionId: crypto.randomUUID(),
+      ...input
+    }
     const transactionsToSave = [transaction, ...transactions]
 
     AsyncStorage.setItem(
-      '@finance.app:transactions', 
+      "@finance.app:transactions", 
       JSON.stringify(transactionsToSave)
     )
     setTransactions(transactionsToSave)
@@ -54,8 +59,8 @@ export default function Index() {
   return (
     <>
       <SafeAreaView className="bg-[#5429cc]">
-        <View className='w-full pt-8 px-4 pb-40 flex flex-row items-center justify-between'>
-          <Text className='block text-xl font-bold text-white'>finance.app</Text>
+        <View className="w-full pt-8 px-4 pb-40 flex flex-row items-center justify-between">
+          <Text className="block text-xl font-bold text-white">finance.app</Text>
 
           <NewTransactionDialog
             onCreateTransaction={(input) => handleTransactionCreation(input)}
@@ -63,36 +68,56 @@ export default function Index() {
         </View>
       </SafeAreaView>
 
-      <View className='px-4 py-10'>
-        <View className='grid grid-cols-3 gap-3 mt-[-10rem]'>
+      <View className="px-4 py-10">
+        <View className="grid grid-cols-3 gap-3 mt-[-10rem]">
           <Card
-            title='Entradas' 
-            icon={<FeatherIcons name="arrow-up-circle" className='h-5 w-5 text-green-500' />}
+            title="Entradas" 
+            icon={<FeatherIcons name="arrow-up-circle" className="h-5 w-5 text-green-500" />}
             value={formatPrice(incomeValue)}
-            variant='basic'
+            variant="basic"
           />
 
           <Card
-            title='Saídas' 
-            icon={<FeatherIcons name="arrow-down-circle" className='h-5 w-5 text-red-500' />}
+            title="Saídas" 
+            icon={<FeatherIcons name="arrow-down-circle" className="h-5 w-5 text-red-500" />}
             value={formatPrice(outcomeValue)}
-            variant='basic'
+            variant="basic"
           />
 
           <Card
-            title='Saldo' 
-            icon={<FeatherIcons name="dollar-sign" className='h-5 w-5 text-white' />}
+            title="Saldo" 
+            icon={<FeatherIcons name="dollar-sign" className="h-5 w-5 text-white" />}
             value={formatPrice(balance)}
-            variant='highlighted'
+            variant="highlighted"
           />
         </View>
       </View>
+
+      <DataTable className="px-4">
+        <DataTable.Header>
+          <DataTable.Title>Título</DataTable.Title>
+          <DataTable.Title>Valor</DataTable.Title>
+          <DataTable.Title>Categoria</DataTable.Title>
+          <DataTable.Title>Data</DataTable.Title>
+        </DataTable.Header>
+
+        {transactions.map((item) => (
+          <DataTable.Row key={item.transactionId}>
+            <DataTable.Cell>
+              <Text className="text-base">{item.title}</Text>
+            </DataTable.Cell>
+            <DataTable.Cell>{formatPrice(item.value)}</DataTable.Cell>
+            <DataTable.Cell>{item.category}</DataTable.Cell>
+            <DataTable.Cell>{formatDate(item.createdAt)}</DataTable.Cell>
+          </DataTable.Row>
+        ))}
+      </DataTable>
     </>
   )
 }
 
 
-{/* <div className='mt-16 w-full'>
+{/* <div className="mt-16 w-full">
           <Table>
             <TableHeader>
               <TableRow>
