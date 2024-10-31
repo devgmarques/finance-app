@@ -16,3 +16,15 @@ export type CreateTransaction = {
   type: TransactionType
   createdAt: Date
 }
+
+export type UpdateTransaction = {
+  transactionId: string
+  title?: string
+  value?: number
+  category?: string
+  type?: TransactionType
+}
+
+export type DeleteTransaction = {
+  transactions: Transaction[]
+}

@@ -5,7 +5,7 @@ import { Alert, Text, View } from 'react-native'
 
 import { Picker } from '@react-native-picker/picker'
 
-import { Transaction, TransactionType } from "@/types/Transaction"
+import { CreateTransaction, Transaction, TransactionType } from "@/types/Transaction"
 
 import { Input } from "./ui/Input"
 import { Button } from "./ui/Button"
@@ -17,7 +17,7 @@ import {
 } from "./ui/Dialog"
 
 type NewTransactionDialogProps = {
-  onCreateTransaction(input: Transaction): void
+  onCreateTransaction(input: CreateTransaction): void
 }
 
 export function NewTransactionDialog({
@@ -41,7 +41,7 @@ export function NewTransactionDialog({
       return Alert.alert("O campo categoria não pode estar vazio")
     }
 
-    const transaction: Transaction = {
+    const transaction: CreateTransaction = {
       title,
       type,
       value,

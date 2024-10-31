@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react"
-import { FlatList, Settings, Text, TouchableOpacity, View } from "react-native"
+import { Text, View } from "react-native"
 import FeatherIcons from "@expo/vector-icons/Feather"
 
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { DataTable } from "react-native-paper"
 
+import 'react-native-get-random-values'
+import { v4 as uuidv4 } from 'uuid'
+
 import { Card } from "@/components/Card"
 import { NewTransactionDialog } from "@/components/NewTransactionDialog"
 
 import { formatDate, formatPrice } from "@/lib/utils"
-import { CreateTransaction, Transaction } from "@/types/Transaction"
+import { CreateTransaction, DeleteTransaction, Transaction, UpdateTransaction } from "@/types/Transaction"
 import { useToast } from "@/components/ui/Toast"
+import { Dialog, DialogTrigger } from "@/components/ui/Dialog"
+import { OperationsTransactionDialog } from "@/components/OperationsTransactionDialog"
 
 export default function Index() {
-  const { toast } = useToast()
-
   const [transactions, setTransactions] = useState<Transaction[]>([])
 
   useEffect(() => {
@@ -29,6 +32,8 @@ export default function Index() {
 
     fetchTransactionInMemory()
   }, [])
+  
+  const { toast } = useToast()
 
   const incomeValue = transactions.reduce((acc, transaction) => {
     return transaction.type === "income" ? acc + transaction.value : acc
@@ -40,9 +45,9 @@ export default function Index() {
 
   const balance = incomeValue - outcomeValue
 
-  function handleTransactionCreation (input: CreateTransaction) {
+  function handleTransactionCreate (input: CreateTransaction) {
     const transaction: Transaction = {
-      transactionId: crypto.randomUUID(),
+      transactionId: uuidv4(),
       ...input
     }
     const transactionsToSave = [transaction, ...transactions]
@@ -56,6 +61,32 @@ export default function Index() {
     toast("Transação criada com sucesso", "success", 4000)
   }
 
+  async function handleTransactionUpdate (input: Transaction) {
+    const transactionsJson = await AsyncStorage.getItem("@finance.app:transactions")
+    const transactions = JSON.parse(transactionsJson!) as Transaction[]
+
+    const transactionsWithNewValue = 
+      transactions.map(item => item.transactionId === input.transactionId ? input : item)
+
+    AsyncStorage.setItem(
+      "@finance.app:transactions", 
+      JSON.stringify(transactionsWithNewValue)
+    )
+    setTransactions(transactionsWithNewValue)
+
+    toast("Transação editada com sucesso", "success", 4000)
+  }
+
+  async function handleTransactionDelete (input: DeleteTransaction) {
+    AsyncStorage.setItem(
+      "@finance.app:transactions", 
+      JSON.stringify(input.transactions)
+    )
+    setTransactions(input.transactions)
+
+    toast("Transação deletada com sucesso", "success", 4000)
+  }
+
   return (
     <>
       <SafeAreaView className="bg-[#5429cc]">
@@ -63,7 +94,7 @@ export default function Index() {
           <Text className="block text-xl font-bold text-white">finance.app</Text>
 
           <NewTransactionDialog
-            onCreateTransaction={(input) => handleTransactionCreation(input)}
+            onCreateTransaction={(input) => handleTransactionCreate(input)}
           />
         </View>
       </SafeAreaView>
@@ -102,60 +133,26 @@ export default function Index() {
         </DataTable.Header>
 
         {transactions.map((item) => (
-          <DataTable.Row key={item.transactionId}>
-            <DataTable.Cell>
-              <Text className="text-base">{item.title}</Text>
-            </DataTable.Cell>
-            <DataTable.Cell>{formatPrice(item.value)}</DataTable.Cell>
-            <DataTable.Cell>{item.category}</DataTable.Cell>
-            <DataTable.Cell>{formatDate(item.createdAt)}</DataTable.Cell>
-          </DataTable.Row>
+          <Dialog>
+            <DialogTrigger>
+              <DataTable.Row 
+                key={item.transactionId} 
+              >
+                <DataTable.Cell>{item.title}</DataTable.Cell>
+                <DataTable.Cell>{formatPrice(item.value)}</DataTable.Cell>
+                <DataTable.Cell>{item.category}</DataTable.Cell>
+                <DataTable.Cell>{formatDate(item.createdAt)}</DataTable.Cell>
+              </DataTable.Row>
+            </DialogTrigger>
+
+            <OperationsTransactionDialog 
+              onDeleteTransaction={({ transactions }) => handleTransactionDelete({ transactions })} 
+              onUpdateTransaction={(transaction) => handleTransactionUpdate(transaction)}
+              transactionId={item.transactionId}
+            />
+          </Dialog>
         ))}
       </DataTable>
     </>
   )
 }
-
-
-{/* <div className="mt-16 w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {transactions.map((transaction, index) => (
-                <TableRow key={index}>
-                  <TableCell>{transaction.title}</TableCell>
-                  <TableCell>{transaction.value}</TableCell>
-                  <TableCell>{transaction.category}</TableCell>
-                  <TableCell>{formatDate(transaction.createdAt)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-                        >
-                          <DotsHorizontalIcon className="h-4 w-4" />
-                          <span className="sr-only">Abrir menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Excluir</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div> */}
