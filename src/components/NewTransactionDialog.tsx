@@ -74,8 +74,13 @@ export function NewTransactionDialog({
         <Input
           id="price"
           label="Preço"
+          numericOnly 
           placeholder="49.99"
-          onChangeText={value => setValue(Number(value))}
+          onChangeText={value => {
+            const valueAsNumber = parseFloat(value.replace(',', '.'))
+
+            setValue(valueAsNumber)
+          }}
         />
 
         <View>

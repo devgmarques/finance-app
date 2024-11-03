@@ -110,8 +110,13 @@ export function OperationsTransactionDialog({
           id="price"
           label="Preço"
           placeholder="49.99"
+          numericOnly
           value={value.toString()}
-          onChangeText={value => setValue(Number(value))}
+          onChangeText={value => {
+            const valueAsNumber = parseFloat(value.replace(',', '.'))
+
+            setValue(valueAsNumber)
+          }}
         />
 
         <View>
