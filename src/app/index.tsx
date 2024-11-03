@@ -13,10 +13,11 @@ import { Card } from "@/components/Card"
 import { NewTransactionDialog } from "@/components/NewTransactionDialog"
 
 import { formatDate, formatPrice } from "@/lib/utils"
-import { CreateTransaction, DeleteTransaction, Transaction, UpdateTransaction } from "@/types/Transaction"
+import { CreateTransaction, DeleteTransaction, Transaction } from "@/types/Transaction"
 import { useToast } from "@/components/ui/Toast"
 import { Dialog, DialogTrigger } from "@/components/ui/Dialog"
 import { OperationsTransactionDialog } from "@/components/OperationsTransactionDialog"
+import { Button } from "@/components/ui/Button"
 
 export default function Index() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -93,9 +94,19 @@ export default function Index() {
         <View className="w-full pt-8 px-4 pb-40 flex flex-row items-center justify-between">
           <Text className="block text-xl font-bold text-white">finance.app</Text>
 
-          <NewTransactionDialog
-            onCreateTransaction={(input) => handleTransactionCreate(input)}
-          />
+          <Dialog>
+            <DialogTrigger>
+              <Button
+                className='bg-[#6933ff] w-44 h-12 hover:bg-[#6933ff] hover:brightness-90'
+                label="Nova transação"
+                labelClasses="text-white"
+              />
+            </DialogTrigger>
+
+            <NewTransactionDialog
+              onCreateTransaction={(input) => handleTransactionCreate(input)}
+            />
+          </Dialog>
         </View>
       </SafeAreaView>
 
@@ -148,7 +159,7 @@ export default function Index() {
             <OperationsTransactionDialog 
               onDeleteTransaction={({ transactions }) => handleTransactionDelete({ transactions })} 
               onUpdateTransaction={(transaction) => handleTransactionUpdate(transaction)}
-              transactionId={item.transactionId}
+              transactionCurrent={item}
             />
           </Dialog>
         ))}

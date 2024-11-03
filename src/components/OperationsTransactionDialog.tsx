@@ -4,7 +4,6 @@ import { Alert, Text, View } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 
 import { 
-  CreateTransaction, 
   DeleteTransaction, 
   Transaction, 
   TransactionType, 
@@ -13,31 +12,33 @@ import {
 
 import { Input } from "./ui/Input"
 import { Button } from "./ui/Button"
-import { DialogContent } from "./ui/Dialog"
+import { DialogContent, useDialog } from "./ui/Dialog"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 type OperationsTransactionDialogProps = {
-  transactionId: string
+  transactionCurrent: Transaction
   onUpdateTransaction(input: Transaction): void
   onDeleteTransaction(input: DeleteTransaction): void
 }
 
 export function OperationsTransactionDialog({
-  transactionId,
+  transactionCurrent,
   onUpdateTransaction,
   onDeleteTransaction
 }: OperationsTransactionDialogProps) {
-  const [title, setTitle] = useState("")
-  const [value, setValue] = useState<number>(0)
-  const [type, setType] = useState<TransactionType>("income")
-  const [category, setCategory] = useState("")
+  const [title, setTitle] = useState(transactionCurrent.title)
+  const [value, setValue] = useState<number>(transactionCurrent.value)
+  const [type, setType] = useState<TransactionType>(transactionCurrent.type)
+  const [category, setCategory] = useState(transactionCurrent.category)
+
+  const { setOpen } = useDialog()
 
   async function deleteTransaction() {
     const transactionsJson = await AsyncStorage.getItem("@finance.app:transactions")
     const transactions = JSON.parse(transactionsJson!) as Transaction[]
 
     const transactionById =  
-      transactions.find(item => item.transactionId === transactionId)
+      transactions.find(item => item.transactionId === transactionCurrent.transactionId)
 
     if(!transactionById) {
       Alert.alert("Esta transação não existe")
@@ -45,7 +46,10 @@ export function OperationsTransactionDialog({
       return
     }  
 
-    const transactionsDeleteById = transactions.filter(item => item.transactionId !== transactionId)
+    const transactionsDeleteById = 
+      transactions.filter(item => item.transactionId !==  transactionCurrent.transactionId)
+
+    setOpen(false)
     onDeleteTransaction({ transactions: transactionsDeleteById })
   }
 
@@ -54,7 +58,7 @@ export function OperationsTransactionDialog({
     const transactions = JSON.parse(transactionsJson!) as Transaction[]
 
     const transactionById =  
-      transactions.find(item => item.transactionId === transactionId)
+      transactions.find(item => item.transactionId === transactionCurrent.transactionId)
 
     if(!transactionById) {
       Alert.alert("Esta transação não existe")
@@ -63,7 +67,7 @@ export function OperationsTransactionDialog({
     }  
 
     const transaction: UpdateTransaction = {
-      transactionId,
+      transactionId: transactionCurrent.transactionId,
       type
     }
 
@@ -79,6 +83,7 @@ export function OperationsTransactionDialog({
 
     Object.assign(transactionById, transaction)
 
+    setOpen(false)
     onUpdateTransaction(transactionById)
   }
 
@@ -97,6 +102,7 @@ export function OperationsTransactionDialog({
           label="Título"
           id="title"
           placeholder="Netflix"
+          value={title}
           onChangeText={value => setTitle(value)}
         />
 
@@ -104,6 +110,7 @@ export function OperationsTransactionDialog({
           id="price"
           label="Preço"
           placeholder="49.99"
+          value={value.toString()}
           onChangeText={value => setValue(Number(value))}
         />
 
@@ -123,6 +130,7 @@ export function OperationsTransactionDialog({
           label="Categoria"
           id="category"
           placeholder="Entretenimento"
+          value={category}
           onChangeText={(value) => setCategory(value)}
         />
       </View>

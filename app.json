@@ -16,7 +16,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.devghmarques.financeapp"
     },
     "web": {
       "bundler": "metro",
@@ -27,6 +28,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "142f5fa0-7910-47e4-a0aa-3463ccdeb7e9"
+      }
     }
   }
 }

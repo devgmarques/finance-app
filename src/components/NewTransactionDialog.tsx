@@ -1,19 +1,17 @@
-
 import { useState } from 'react'
 
 import { Alert, Text, View } from 'react-native'
 
 import { Picker } from '@react-native-picker/picker'
 
-import { CreateTransaction, Transaction, TransactionType } from "@/types/Transaction"
+import { CreateTransaction, TransactionType } from "@/types/Transaction"
 
 import { Input } from "./ui/Input"
 import { Button } from "./ui/Button"
 
 import { 
-  Dialog, 
   DialogContent, 
-  DialogTrigger 
+  useDialog
 } from "./ui/Dialog"
 
 type NewTransactionDialogProps = {
@@ -23,6 +21,8 @@ type NewTransactionDialogProps = {
 export function NewTransactionDialog({
   onCreateTransaction
 }: NewTransactionDialogProps) {
+  const { setOpen } = useDialog()
+
   const [title, setTitle] = useState('')
   const [value, setValue] = useState<number>(0)
   const [type, setType] = useState<TransactionType>("income")
@@ -49,70 +49,61 @@ export function NewTransactionDialog({
       createdAt: new Date(),
     }
 
+    setOpen(false)
     onCreateTransaction(transaction)
   }
 
   return (
-    <Dialog>
-      <DialogTrigger>
-        <Button
-          className='bg-[#6933ff] w-44 h-12 hover:bg-[#6933ff] hover:brightness-90'
-          label="Nova transação"
-          labelClasses="text-white"
+    <DialogContent className="bg-white">
+      <View className='space-y-2'>
+        <Text className="text-lg font-semibold leading-none tracking-tight">Criar transação</Text>
+
+        <Text className="text-sm text-muted-foreground">
+          Adicione uma nova transação para organizar as suas finanças
+        </Text>
+      </View>
+
+      <View className="space-y-5 py-4">
+        <Input
+          label="Título"
+          id="title"
+          placeholder="Netflix"
+          onChangeText={value => setTitle(value)}
         />
-      </DialogTrigger>
 
-      <DialogContent className="bg-white">
-        <View className='space-y-2'>
-          <Text className="text-lg font-semibold leading-none tracking-tight">Criar transação</Text>
+        <Input
+          id="price"
+          label="Preço"
+          placeholder="49.99"
+          onChangeText={value => setValue(Number(value))}
+        />
 
-          <Text className="text-sm text-muted-foreground">
-            Adicione uma nova transação para organizar as suas finanças
-          </Text>
+        <View>
+          <Text className="text-base">Tipo</Text>
+
+          <Picker 
+            onValueChange={(value) => setType(value as TransactionType)}
+            selectedValue={type}
+          >
+            <Picker.Item label="Entrada" value="income" />
+            <Picker.Item label="Saída" value="outcome" />
+          </Picker>
         </View>
 
-        <View className="space-y-5 py-4">
-          <Input
-            label="Título"
-            id="title"
-            placeholder="Netflix"
-            onChangeText={value => setTitle(value)}
-          />
-
-          <Input
-            id="price"
-            label="Preço"
-            placeholder="49.99"
-            onChangeText={value => setValue(Number(value))}
-          />
-
-          <View>
-            <Text className="text-base">Tipo</Text>
-
-            <Picker 
-              onValueChange={(value) => setType(value as TransactionType)}
-              selectedValue={type}
-            >
-              <Picker.Item label="Entrada" value="income" />
-              <Picker.Item label="Saída" value="outcome" />
-            </Picker>
-          </View>
-
-          <Input
-            label="Categoria"
-            id="category"
-            placeholder="Entretenimento"
-            onChangeText={(value) => setCategory(value)}
-          />
-        </View>
-
-        <Button 
-          label="Criar" 
-          labelClasses="text-white" 
-          className="bg-[#5429cc] text-white hover:bg-[#5429cc]/90" 
-          onPress={createTransaction}
+        <Input
+          label="Categoria"
+          id="category"
+          placeholder="Entretenimento"
+          onChangeText={(value) => setCategory(value)}
         />
-      </DialogContent>
-    </Dialog>
+      </View>
+
+      <Button 
+        label="Criar" 
+        labelClasses="text-white" 
+        className="bg-[#5429cc] text-white hover:bg-[#5429cc]/90" 
+        onPress={createTransaction}
+      />
+    </DialogContent>
   )
 }
