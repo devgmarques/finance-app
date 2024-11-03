@@ -1,9 +1,10 @@
 {
   "expo": {
-    "name": "finance-app",
+    "name": "Finance App",
     "slug": "finance-app",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./public/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
